@@ -11,6 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   webview_flutter: ^2.0.10
+  provider: ^6.0.3
+  http: ^0.13.4
+  youtube_player_flutter: ^8.1.0
+  galleryimage: ^1.2.0
 
 dev_dependencies:
   flutter_test:
