@@ -1,6 +1,13 @@
-part of gammal_tech;
+library GT_members_app;
 
-class User with ChangeNotifier {
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:galleryimage/galleryimage.dart';
+
+class _User with ChangeNotifier {
   String id;
   final String name;
   final String profilePictureUrl;
@@ -9,7 +16,7 @@ class User with ChangeNotifier {
   List<Map<String, String>>? certificates;
   List<Map<String, String>>? experience;
   List<Map<String, String>>? exams;
-  User(
+  _User(
       {required this.id,
       required this.name,
       required this.bio,
@@ -20,18 +27,18 @@ class User with ChangeNotifier {
       this.exams});
 }
 
-class Users with ChangeNotifier {
-  List<User> _users = [];
+class _Users with ChangeNotifier {
+  List<_User> _users = [];
 
   Future<void> fetchUsers() async {
     final url = Uri.parse(
         'https://new-project-64c39-default-rtdb.firebaseio.com/users.json');
     final response = await http.get(url);
     final usersData = json.decode(response.body) as Map<String, dynamic>;
-    final List<User> loadedUsers = [];
+    final List<_User> loadedUsers = [];
     usersData.forEach((key, value) {
       loadedUsers.add(
-        User(
+        _User(
           id: key,
           name: value['name'],
           bio: value['bio'],
@@ -69,79 +76,79 @@ class Users with ChangeNotifier {
     });
   }
 
-  List<User> get users {
+  List<_User> get users {
     return _users;
   }
 
-  User findById(userId) {
+  _User findById(userId) {
     return _users.firstWhere((user) => user.id == userId);
   }
 }
 
-class CertificatesScreen extends StatelessWidget {
+class _CertificatesScreen extends StatelessWidget {
   final String userId;
-  const CertificatesScreen({Key? key, required this.userId}) : super(key: key);
+  const _CertificatesScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<Users>(context).findById(userId);
+    final user = Provider.of<_Users>(context).findById(userId);
     List<Map<String, String>> userCertificates =
         user.certificates as List<Map<String, String>>;
     return ListView.builder(
         itemCount: userCertificates.length,
         itemBuilder: (ctx, index) {
-          return ExperienceElement(
+          return _ExperienceElement(
               title: userCertificates[index]['title']!,
               imageUrl: userCertificates[index]['imageUrl']!);
         });
   }
 }
 
-class ExamsScreen extends StatelessWidget {
+class _ExamsScreen extends StatelessWidget {
   final String userId;
-  const ExamsScreen({Key? key, required this.userId}) : super(key: key);
+  const _ExamsScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<Users>(context).findById(userId);
+    final user = Provider.of<_Users>(context).findById(userId);
     List<Map<String, String>> userExams =
         user.exams as List<Map<String, String>>;
     return ListView.builder(
         itemCount: userExams.length,
         itemBuilder: (ctx, index) {
-          return ExamElement(
+          return _ExamElement(
               title: userExams[index]['title']!,
               youtubeVideoAdress: userExams[index]['youtubeVideoAdress']!);
         });
   }
 }
 
-class ExperienceScreen extends StatelessWidget {
+class _ExperienceScreen extends StatelessWidget {
   final String userId;
-  const ExperienceScreen({Key? key, required this.userId}) : super(key: key);
+  const _ExperienceScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<Users>(context).findById(userId);
+    final user = Provider.of<_Users>(context).findById(userId);
     List<Map<String, String>> userExperience =
         user.experience as List<Map<String, String>>;
     return ListView.builder(
         itemCount: userExperience.length,
         itemBuilder: (ctx, index) {
-          return ExperienceElement(
+          return _ExperienceElement(
               title: userExperience[index]['title']!,
               imageUrl: userExperience[index]['imageUrl']!);
         });
   }
 }
 
-class UserInfoScreen extends StatelessWidget {
+class _UserInfoScreen extends StatelessWidget {
   final String userId;
-  const UserInfoScreen({Key? key, required this.userId}) : super(key: key);
+  const _UserInfoScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<Users>(context).findById(userId);
+    final user = Provider.of<_Users>(context).findById(userId);
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -177,7 +184,7 @@ class UserInfoScreen extends StatelessWidget {
   }
 }
 
-class UserProfileScreen extends StatelessWidget {
+class _UserProfileScreen extends StatelessWidget {
   Widget? screen1;
   Widget? screen2;
   Widget? screen3;
@@ -188,7 +195,7 @@ class UserProfileScreen extends StatelessWidget {
   String? title4;
   final String id;
 
-  UserProfileScreen({
+  _UserProfileScreen({
     required this.id,
     this.screen1,
     this.screen2,
@@ -205,16 +212,16 @@ class UserProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (screen1 == null) {
-      screen1 = UserInfoScreen(userId: id);
+      screen1 = _UserInfoScreen(userId: id);
     }
     if (screen2 == null) {
-      screen2 = CertificatesScreen(userId: id);
+      screen2 = _CertificatesScreen(userId: id);
     }
     if (screen3 == null) {
-      screen3 = ExperienceScreen(userId: id);
+      screen3 = _ExperienceScreen(userId: id);
     }
     if (screen4 == null) {
-      screen4 = ExamsScreen(userId: id);
+      screen4 = _ExamsScreen(userId: id);
     }
     if (title1 == null) {
       title1 = 'information';
@@ -270,7 +277,7 @@ class UserProfileScreen extends StatelessWidget {
   }
 }
 
-class UsersScreen extends StatefulWidget {
+class _UsersScreen extends StatefulWidget {
   static const routeName = '/users-screen';
   Widget? screen1;
   Widget? screen2;
@@ -281,7 +288,7 @@ class UsersScreen extends StatefulWidget {
   String? title3;
   String? title4;
 
-  UsersScreen({
+  _UsersScreen({
     this.screen1,
     this.screen2,
     this.screen3,
@@ -294,10 +301,10 @@ class UsersScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<UsersScreen> createState() => _UsersScreenState();
+  State<_UsersScreen> createState() => _UsersScreenState();
 }
 
-class _UsersScreenState extends State<UsersScreen> {
+class _UsersScreenState extends State<_UsersScreen> {
   bool x = true;
   bool isLoading = true;
   @override
@@ -306,7 +313,7 @@ class _UsersScreenState extends State<UsersScreen> {
       setState(() {
         isLoading = true;
       });
-      Provider.of<Users>(context).fetchUsers().then((_) {
+      Provider.of<_Users>(context).fetchUsers().then((_) {
         setState(() {
           isLoading = false;
         });
@@ -331,7 +338,7 @@ class _UsersScreenState extends State<UsersScreen> {
       ),
       body: isLoading
           ? CircularProgressIndicator()
-          : UsersList(
+          : _UsersList(
               screen1: widget.screen1,
               screen2: widget.screen2,
               screen3: widget.screen3,
@@ -345,20 +352,20 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 }
 
-class ExamElement extends StatefulWidget {
+class _ExamElement extends StatefulWidget {
   final String title;
   final String youtubeVideoAdress;
-  const ExamElement({
+  const _ExamElement({
     Key? key,
     required this.title,
     required this.youtubeVideoAdress,
   }) : super(key: key);
 
   @override
-  State<ExamElement> createState() => _ExamElementState();
+  State<_ExamElement> createState() => _ExamElementState();
 }
 
-class _ExamElementState extends State<ExamElement> {
+class _ExamElementState extends State<_ExamElement> {
   late YoutubePlayerController _controller;
   @override
   void initState() {
@@ -393,10 +400,10 @@ class _ExamElementState extends State<ExamElement> {
   }
 }
 
-class ExperienceElement extends StatelessWidget {
+class _ExperienceElement extends StatelessWidget {
   final String title;
   final String imageUrl;
-  const ExperienceElement({
+  const _ExperienceElement({
     Key? key,
     required this.title,
     required this.imageUrl,
@@ -435,7 +442,7 @@ class ExperienceElement extends StatelessWidget {
   }
 }
 
-class UserListItem extends StatelessWidget {
+class _UserListItem extends StatelessWidget {
   Widget? screen1;
   Widget? screen2;
   Widget? screen3;
@@ -446,7 +453,7 @@ class UserListItem extends StatelessWidget {
   String? title4;
   final String id;
 
-  UserListItem({
+  _UserListItem({
     required this.id,
     this.screen1,
     this.screen2,
@@ -461,7 +468,7 @@ class UserListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<User>(context);
+    final user = Provider.of<_User>(context);
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: NetworkImage(
@@ -472,7 +479,7 @@ class UserListItem extends StatelessWidget {
       subtitle: Text(user.profession),
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-          return UserProfileScreen(
+          return _UserProfileScreen(
             id: user.id,
             screen1: screen1,
             screen2: screen2,
@@ -489,7 +496,7 @@ class UserListItem extends StatelessWidget {
   }
 }
 
-class UsersList extends StatelessWidget {
+class _UsersList extends StatelessWidget {
   Widget? screen1;
   Widget? screen2;
   Widget? screen3;
@@ -499,7 +506,7 @@ class UsersList extends StatelessWidget {
   String? title3;
   String? title4;
 
-  UsersList({
+  _UsersList({
     this.screen1,
     this.screen2,
     this.screen3,
@@ -512,14 +519,14 @@ class UsersList extends StatelessWidget {
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final users = Provider.of<Users>(context).users;
+    final users = Provider.of<_Users>(context).users;
 
     return ListView.builder(
       itemCount: users.length,
       itemBuilder: (ctx, index) {
         return ChangeNotifierProvider.value(
           value: users[index],
-          child: UserListItem(
+          child: _UserListItem(
             id: users[index].id,
             screen1: screen1,
             screen2: screen2,
@@ -536,7 +543,7 @@ class UsersList extends StatelessWidget {
   }
 }
 
-class GTechApp extends StatelessWidget {
+class GTMembersApp extends StatelessWidget {
   Widget? tab1;
   Widget? tab2;
   Widget? tab3;
@@ -546,7 +553,7 @@ class GTechApp extends StatelessWidget {
   String? title3;
   String? title4;
 
-  GTechApp({
+  GTMembersApp({
     this.tab1,
     this.tab2,
     this.tab3,
@@ -562,12 +569,12 @@ class GTechApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: ((ctx) => Users())),
+        ChangeNotifierProvider(create: ((ctx) => _Users())),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(primarySwatch: Colors.teal),
-        home: UsersScreen(
+        home: _UsersScreen(
           screen1: tab1,
           screen2: tab2,
           screen3: tab3,
