@@ -7,6 +7,29 @@ import 'dart:convert';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:galleryimage/galleryimage.dart';
 
+class _ExtraTab with ChangeNotifier {
+  String extraTitle;
+  Icon extraIcon;
+  Widget extraScreen;
+
+  _ExtraTab(
+      {required this.extraIcon,
+      required this.extraScreen,
+      required this.extraTitle});
+
+  String get title {
+    return extraTitle;
+  }
+
+  Icon get icon {
+    return extraIcon;
+  }
+
+  Widget get screen {
+    return extraScreen;
+  }
+}
+
 class _User with ChangeNotifier {
   String id;
   final String name;
@@ -31,8 +54,9 @@ class _Users with ChangeNotifier {
   List<_User> _users = [];
 
   Future<void> fetchUsers() async {
-    final url = Uri.parse(
-        'https://new-project-64c39-default-rtdb.firebaseio.com/users.json');
+    const dburl =
+        'https://new-project-64c39-default-rtdb.firebaseio.com/users.json';
+    final url = Uri.parse(dburl);
     final response = await http.get(url);
     final usersData = json.decode(response.body) as Map<String, dynamic>;
     final List<_User> loadedUsers = [];
@@ -185,91 +209,56 @@ class _UserInfoScreen extends StatelessWidget {
 }
 
 class _UserProfileScreen extends StatelessWidget {
-  Widget? screen1;
-  Widget? screen2;
-  Widget? screen3;
-  Widget? screen4;
-  String? title1;
-  String? title2;
-  String? title3;
-  String? title4;
   final String id;
 
   _UserProfileScreen({
     required this.id,
-    this.screen1,
-    this.screen2,
-    this.screen3,
-    this.screen4,
-    this.title1,
-    this.title2,
-    this.title3,
-    this.title4,
     Key? key,
   }) : super(key: key);
   static const routeName = '/user-profile-screen';
 
   @override
   Widget build(BuildContext context) {
-    if (screen1 == null) {
-      screen1 = _UserInfoScreen(userId: id);
-    }
-    if (screen2 == null) {
-      screen2 = _CertificatesScreen(userId: id);
-    }
-    if (screen3 == null) {
-      screen3 = _ExperienceScreen(userId: id);
-    }
-    if (screen4 == null) {
-      screen4 = _ExamsScreen(userId: id);
-    }
-    if (title1 == null) {
-      title1 = 'information';
-    }
-    if (title2 == null) {
-      title2 = 'Certificates';
-    }
-    if (title3 == null) {
-      title3 = 'Experience';
-    }
-    if (title4 == null) {
-      title4 = 'verified Exams';
-    }
-
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('User Profile'),
           bottom: TabBar(isScrollable: true, tabs: [
             Tab(
               icon: const Icon(Icons.account_circle_outlined, size: 15),
-              text: title1,
+              text: 'information',
               height: 50,
             ),
             Tab(
               icon: const Icon(Icons.beenhere_outlined, size: 15),
               height: 50,
-              text: title2,
+              text: 'Certificates',
             ),
             Tab(
               icon: const Icon(Icons.star_border, size: 15),
-              text: title3,
+              text: 'Experience',
               height: 50,
             ),
             Tab(
               icon: const Icon(Icons.verified_outlined, size: 15),
-              text: title4,
+              text: 'verified Exams',
               height: 50,
             ),
+            Tab(
+              icon: Provider.of<_ExtraTab>(context, listen: false).extraIcon,
+              text: Provider.of<_ExtraTab>(context, listen: false).extraTitle,
+              height: 50,
+            )
           ]),
         ),
         body: TabBarView(
           children: [
-            screen1!,
-            screen2!,
-            screen3!,
-            screen4!,
+            _UserInfoScreen(userId: id),
+            _CertificatesScreen(userId: id),
+            _ExperienceScreen(userId: id),
+            _ExamsScreen(userId: id),
+            Provider.of<_ExtraTab>(context, listen: false).extraScreen,
           ],
         ),
       ),
@@ -279,24 +268,8 @@ class _UserProfileScreen extends StatelessWidget {
 
 class _UsersScreen extends StatefulWidget {
   static const routeName = '/users-screen';
-  Widget? screen1;
-  Widget? screen2;
-  Widget? screen3;
-  Widget? screen4;
-  String? title1;
-  String? title2;
-  String? title3;
-  String? title4;
 
   _UsersScreen({
-    this.screen1,
-    this.screen2,
-    this.screen3,
-    this.screen4,
-    this.title1,
-    this.title2,
-    this.title3,
-    this.title4,
     Key? key,
   }) : super(key: key);
 
@@ -336,18 +309,7 @@ class _UsersScreenState extends State<_UsersScreen> {
         ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
-      body: isLoading
-          ? CircularProgressIndicator()
-          : _UsersList(
-              screen1: widget.screen1,
-              screen2: widget.screen2,
-              screen3: widget.screen3,
-              screen4: widget.screen4,
-              title1: widget.title1,
-              title2: widget.title2,
-              title3: widget.title3,
-              title4: widget.title4,
-            ),
+      body: isLoading ? CircularProgressIndicator() : _UsersList(),
     );
   }
 }
@@ -388,8 +350,14 @@ class _ExamElementState extends State<_ExamElement> {
               SizedBox(
                 height: 10,
               ),
-              YoutubePlayer(
-                  bottomActions: [], width: 300, controller: _controller),
+              YoutubePlayerBuilder(
+                  player: YoutubePlayer(
+                      bottomActions: [], width: 300, controller: _controller),
+                  builder: (ctx, player) {
+                    return Column(
+                      children: [player],
+                    );
+                  }),
               SizedBox(
                 height: 10,
               ),
@@ -443,26 +411,10 @@ class _ExperienceElement extends StatelessWidget {
 }
 
 class _UserListItem extends StatelessWidget {
-  Widget? screen1;
-  Widget? screen2;
-  Widget? screen3;
-  Widget? screen4;
-  String? title1;
-  String? title2;
-  String? title3;
-  String? title4;
   final String id;
 
   _UserListItem({
     required this.id,
-    this.screen1,
-    this.screen2,
-    this.screen3,
-    this.screen4,
-    this.title1,
-    this.title2,
-    this.title3,
-    this.title4,
     Key? key,
   }) : super(key: key);
 
@@ -481,14 +433,6 @@ class _UserListItem extends StatelessWidget {
         Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
           return _UserProfileScreen(
             id: user.id,
-            screen1: screen1,
-            screen2: screen2,
-            screen3: screen3,
-            screen4: screen4,
-            title1: title1,
-            title2: title2,
-            title3: title3,
-            title4: title4,
           );
         }));
       },
@@ -497,24 +441,7 @@ class _UserListItem extends StatelessWidget {
 }
 
 class _UsersList extends StatelessWidget {
-  Widget? screen1;
-  Widget? screen2;
-  Widget? screen3;
-  Widget? screen4;
-  String? title1;
-  String? title2;
-  String? title3;
-  String? title4;
-
   _UsersList({
-    this.screen1,
-    this.screen2,
-    this.screen3,
-    this.screen4,
-    this.title1,
-    this.title2,
-    this.title3,
-    this.title4,
     Key? key,
   }) : super(key: key);
   @override
@@ -528,14 +455,6 @@ class _UsersList extends StatelessWidget {
           value: users[index],
           child: _UserListItem(
             id: users[index].id,
-            screen1: screen1,
-            screen2: screen2,
-            screen3: screen3,
-            screen4: screen4,
-            title1: title1,
-            title2: title2,
-            title3: title3,
-            title4: title4,
           ),
         );
       },
@@ -544,24 +463,14 @@ class _UsersList extends StatelessWidget {
 }
 
 class GTMembersApp extends StatelessWidget {
-  Widget? tab1;
-  Widget? tab2;
-  Widget? tab3;
-  Widget? tab4;
-  String? title1;
-  String? title2;
-  String? title3;
-  String? title4;
+  final String extraTitle;
+  final Icon extraIcon;
+  final Widget extraScreen;
 
   GTMembersApp({
-    this.tab1,
-    this.tab2,
-    this.tab3,
-    this.tab4,
-    this.title1,
-    this.title2,
-    this.title3,
-    this.title4,
+    this.extraScreen = const SizedBox(),
+    this.extraTitle = 'extra',
+    this.extraIcon = const Icon(Icons.add),
     Key? key,
   }) : super(key: key);
 
@@ -569,21 +478,20 @@ class GTMembersApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: ((ctx) => _Users())),
+        ChangeNotifierProvider(
+          create: ((ctx) => _Users()),
+        ),
+        ChangeNotifierProvider(
+          create: ((ctx) => _ExtraTab(
+              extraIcon: extraIcon,
+              extraScreen: extraScreen,
+              extraTitle: extraTitle)),
+        )
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(primarySwatch: Colors.teal),
-        home: _UsersScreen(
-          screen1: tab1,
-          screen2: tab2,
-          screen3: tab3,
-          screen4: tab4,
-          title1: title1,
-          title2: title2,
-          title3: title3,
-          title4: title4,
-        ),
+        home: _UsersScreen(),
       ),
     );
   }
