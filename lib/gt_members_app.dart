@@ -1,5 +1,3 @@
-library GT_members_app;
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -7,26 +5,26 @@ import 'dart:convert';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:galleryimage/galleryimage.dart';
 
-class _ExtraTab with ChangeNotifier {
-  String extraTitle;
-  Icon extraIcon;
-  Widget extraScreen;
+class ExtraTab with ChangeNotifier {
+  String? extraTitle;
+  Icon? extraIcon;
+  Widget? extraScreen;
 
-  _ExtraTab(
-      {required this.extraIcon,
-      required this.extraScreen,
-      required this.extraTitle});
+  ExtraTab(
+      {this.extraIcon = const Icon(Icons.add),
+      this.extraScreen = const SizedBox(),
+      this.extraTitle = 'Extra'});
 
   String get title {
-    return extraTitle;
+    return extraTitle!;
   }
 
   Icon get icon {
-    return extraIcon;
+    return extraIcon!;
   }
 
   Widget get screen {
-    return extraScreen;
+    return extraScreen!;
   }
 }
 
@@ -94,7 +92,7 @@ class _Users with ChangeNotifier {
           }).toList(),
         ),
       );
-      print(loadedUsers[0]);
+
       _users = loadedUsers;
       notifyListeners();
     });
@@ -246,8 +244,8 @@ class _UserProfileScreen extends StatelessWidget {
               height: 50,
             ),
             Tab(
-              icon: Provider.of<_ExtraTab>(context, listen: false).extraIcon,
-              text: Provider.of<_ExtraTab>(context, listen: false).extraTitle,
+              icon: Provider.of<ExtraTab>(context, listen: false).extraIcon,
+              text: Provider.of<ExtraTab>(context, listen: false).extraTitle,
               height: 50,
             )
           ]),
@@ -258,7 +256,7 @@ class _UserProfileScreen extends StatelessWidget {
             _CertificatesScreen(userId: id),
             _ExperienceScreen(userId: id),
             _ExamsScreen(userId: id),
-            Provider.of<_ExtraTab>(context, listen: false).extraScreen,
+            Provider.of<ExtraTab>(context, listen: false).extraScreen!,
           ],
         ),
       ),
@@ -463,14 +461,10 @@ class _UsersList extends StatelessWidget {
 }
 
 class GTMembersApp extends StatelessWidget {
-  final String extraTitle;
-  final Icon extraIcon;
-  final Widget extraScreen;
+  final ExtraTab? extraTab;
 
   GTMembersApp({
-    this.extraScreen = const SizedBox(),
-    this.extraTitle = 'extra',
-    this.extraIcon = const Icon(Icons.add),
+    this.extraTab,
     Key? key,
   }) : super(key: key);
 
@@ -482,10 +476,11 @@ class GTMembersApp extends StatelessWidget {
           create: ((ctx) => _Users()),
         ),
         ChangeNotifierProvider(
-          create: ((ctx) => _ExtraTab(
-              extraIcon: extraIcon,
-              extraScreen: extraScreen,
-              extraTitle: extraTitle)),
+          create: ((ctx) => ExtraTab(
+                extraIcon: extraTab!.extraIcon,
+                extraScreen: extraTab!.extraScreen,
+                extraTitle: extraTab!.extraTitle,
+              )),
         )
       ],
       child: MaterialApp(
